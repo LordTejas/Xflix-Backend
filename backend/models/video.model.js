@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const { genres, contentRatings } = require("../utils/values");
 
 const VideoSchema = mongoose.Schema(
   {
@@ -14,9 +15,7 @@ const VideoSchema = mongoose.Schema(
       required: true,
       trim: true,
       unique: true,
-      validate(value) {
-
-      },
+      validate: value => validator.isUrl(value),
     },
     previewImage: {
       type: String,
@@ -29,7 +28,7 @@ const VideoSchema = mongoose.Schema(
       trim: true,
       required: true,
       validate(value) {
-        if (!isValidGenre(value)) {
+        if (!genres.includes(value)) {
           throw new Error("Plese select valid genre.");
         }
       },
@@ -39,7 +38,7 @@ const VideoSchema = mongoose.Schema(
       trim: true,
       required: true,
       validate(value) {
-        if (!isValidContentRating(value)) {
+        if (!contentRatings.includes(value)) {
           throw new Error("Plese select valid Content Rating.");
         }
       },
@@ -63,8 +62,8 @@ const VideoSchema = mongoose.Schema(
     },
     views: {
       type: Number,
-      required: true,
       default: 0,
+      required: true,
     },
   },
   {
