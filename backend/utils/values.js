@@ -6,10 +6,33 @@ const sortBy = ["viewCount", "releaseDate"];
 const updateVoteType = ["upVotes", "downVotes"];
 const changeVoteTypes = ["increase", "decrease"];
 
+
+const getContentRatings = rating => {
+    const index = contentRatings.indexOf(rating);
+    if (index === -1) return null;
+
+    const validRatings = contentRatings.slice(index);
+
+    return validRatings;
+}
+
+
+const isValidGenre = arr => {
+    return arr.every(ele => genres.includes(ele));
+}
+
+const isValidSortOption = option => {
+    return sortBy.includes(option);
+}
+
+
 module.exports = {
     genres,
     contentRatings,
     sortBy,
     updateVoteType,
     changeVoteTypes,
+    getContentRatings,
+    isValidGenre,
+    isValidSortOption,
 };

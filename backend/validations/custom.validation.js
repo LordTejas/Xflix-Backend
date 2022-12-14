@@ -21,9 +21,27 @@ const isValidGenre = (genre, helpers) => {
   return value;
 }
 
+const isValidReleaseDate = (date, helpers) => {
+  if (new Date(date) != "Invalid Date") {
+    return helpers.message('"{{#label}}" release Date must be dd MMM YYYY i.e. \"28 May 2002\"');
+  }
+  return value;
+}
+
+
+const isValidVideoLink = (value, helpers) => {
+  if (!/^((http|https)\:\/\/)?(www\.youtube\.com|youtu\.?be)\/((watch\?v=)?([a-zA-Z0-9]{11}))(&.*)*$/.match(value)) {
+    return helpers.message('"{{#label}}" Must be a valid youtube video link!');
+  }
+  return value;
+}
+
+
 
 module.exports = {
   objectId,
   isValidContentRating,
-  isValidGenre
+  isValidGenre,
+  isValidReleaseDate,
+  isValidVideoLink,
 };

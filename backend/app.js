@@ -3,7 +3,7 @@ const compression = require("compression");
 const cors = require("cors");
 const httpStatus = require("http-status");
 const routes = require("./routes/v1");
-// const { errorHandler } = require("./middlewares/error");
+const { errorHandler } = require("./middlewares/error");
 const ApiError = require("./utils/ApiError");
 const helmet = require("helmet");
 
@@ -36,6 +36,6 @@ app.use((req, res, next) => {
 });
 
 // handle error
-// app.use(errorHandler);
+app.use(errorHandler);
 
 module.exports = app;
