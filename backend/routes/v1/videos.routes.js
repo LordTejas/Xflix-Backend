@@ -20,12 +20,12 @@ router.post(
 
 router.patch(
     '/:videoId/votes', 
-    validate(videoValidation.getVideoById),
-    videoController.getVideos);
+    validate(videoValidation.patchVoteCount),
+    videoController.patchVoteCount);
 
 router.patch(
     '/:videoId/views', 
-    validate(videoValidation.getVideoById),
-    videoController.getVideos);
+    validate(videoValidation.patchViewCount),
+    videoController.patchViewCount);
 
 module.exports = router;

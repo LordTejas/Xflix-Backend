@@ -1,6 +1,6 @@
 const Joi = require("joi");
-const { objectId, isValidVideoLink, isValidContentRating, isValidReleaseDate, isValidGenre } = require("./custom.validation");
-const {contentRatings, genres, sortBy} = require('../utils/values');
+const { objectId, isValidVideoLink, isValidReleaseDate} = require("./custom.validation");
+const {contentRatings, genres, sortBy, updateVoteType, changeVoteTypes} = require('../utils/values');
 
 
 const addVideo = {
@@ -25,15 +25,33 @@ const getVideoById = {
 const searchVideos = {
   query: Joi.object().keys({
     title: Joi.string(),
-    genre: Joi.string().valid(...genres),
-    contentRating: Joi.string().valid(...contentRatings),
+    genres: Joi.string(),
+    contentRating: Joi.string(),
     sortBy: Joi.string().valid(...sortBy),
   }),
 }
+
+const patchVoteCount = {
+  params: Joi.object().keys({
+    videoId: Joi.custom(objectId).required(),
+  }),
+  body: Joi.object().keys({
+    vote: Joi.string().required().valid(...updateVoteType),
+    change: Joi.string().required().valid(...changeVoteTypes),
+  }),
+};
+
+const patchViewCount = {
+  params: Joi.object().keys({
+    videoId: Joi.custom(objectId).required(),
+  }),
+};
 
 
 module.exports = {
   addVideo,
   searchVideos,
   getVideoById,
+  patchVoteCount,
+  patchViewCount,
 };

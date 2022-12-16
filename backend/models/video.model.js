@@ -6,17 +6,16 @@ const VideoSchema = mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
       trim: true,
-      unique: true,
+      required: true,
     },
     videoLink: {
       type: String,
-      required: true,
       trim: true,
       unique: true,
+      required: true,
       validation(value) {
-        if (!/^((http|https)\:\/\/)?(www\.youtube\.com|youtu\.?be)\/((watch\?v=)?([a-zA-Z0-9]{11}))(&.*)*$/.match(value)) {
+        if (!/((http|https)\:\/\/)?(www\.youtube\.com|youtu\.?be)/.test(value)) {
           throw new Error("Not a valid Youtube Video Link!");
         }
       },
@@ -47,26 +46,22 @@ const VideoSchema = mongoose.Schema(
       },
     },
     releaseDate: {
-      type: Date,
+      type: String,
       Default: Date.now(),
-      required: true,
     },
     votes: {
       upVotes: {
         type: Number,
         default: 0,
-        required: true,
       },
       downVotes: {
         type: Number,
         default: 0,
-        required: true,
       }
     },
     viewCount: {
       type: Number,
       default: 0,
-      required: true,
     },
   },
   {
@@ -76,7 +71,7 @@ const VideoSchema = mongoose.Schema(
 
 
 VideoSchema.statics.isTitleTaken = async function(title) {
-  const video = await this.findOne({ title: title });
+  const video = await this.findOne({ title });
   return !!video;
 }
 

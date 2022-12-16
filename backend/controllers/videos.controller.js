@@ -17,7 +17,7 @@ const getVideos = catchAsync(async (req, res) => {
     if (videos.length === 0) {
         throw new ApiError(httpStatus.NOT_FOUND, "No Video Found!");
     } else {
-        res.status(httpStatus.OK).send(videos);
+        res.status(httpStatus.OK).send({videos: videos});
     }
 
 })
@@ -45,18 +45,27 @@ const postVideo = catchAsync(async (req, res) => {
 
 const patchVoteCount = catchAsync(async (req, res) => {
     const videoId = req.params.videoId;
-    res.status(httpStatus.OK).send({_id: videoId});
+    const { vote, change } = req.body;
+
+    // Updaes video via service
+    await videoServices.patchVoteCount(videoId, vote, change);
+
+    res.status(httpStatus.NO_CONTENT).send();
 })
 
-const patchViews = catchAsync(async (req, res) => {
+const patchViewCount = catchAsync(async (req, res) => {
     const videoId = req.params.videoId;
-    res.status(httpStatus.OK).send({_id: videoId});
+
+    // Updates video via service
+    await videoServices.patchViewCount(videoId);
+
+    res.status(httpStatus.NO_CONTENT).send();
 })
 
 module.exports = {
     getVideos,
     getVideoById,
     postVideo,
-    patchViews,
+    patchViewCount,
     patchVoteCount,
 }
