@@ -1,8 +1,11 @@
-const { Video } = require('../models');
+const { Video } = require("../models");
 const httpStatus = require("http-status");
 const ApiError = require("../utils/ApiError");
-const { getContentRatings, isValidGenre, isValidSortOption } = require("../utils/values");
-
+const {
+  getContentRatings,
+  isValidGenre,
+  isValidSortOption,
+} = require("../utils/values");
 
 /**
  * Get Video by id
@@ -12,10 +15,9 @@ const { getContentRatings, isValidGenre, isValidSortOption } = require("../utils
  */
 
 const getVideoById = async (videoId) => {
-    const video = await Video.findById(videoId);
-    return video;
-}
-
+  const video = await Video.findById(videoId);
+  return video;
+};
 
 /**
  * Get Video by id
@@ -24,84 +26,83 @@ const getVideoById = async (videoId) => {
  * @returns {Promise<Video>}
  */
 
-
 const searchVideos = async (title, videoGenres, contentRating, sortBy) => {
+  // Empty Search object
+  let searchQuery = {};
 
-    // Empty Search object
-    let searchQuery = { };
+  if (!!title) {
+    searchQuery = {
+      ...searchQuery,
+      title: {
+        $regex: title,
+        $options: "i",
+      },
+    };
+  }
 
-    if (!!title) {
-        searchQuery = {
-            ...searchQuery, 
-            title: {
-                $regex: title,
-                $options: "i",
-            },
-        };
-    } 
+  if (!!videoGenres) {
+    // Parse String
+    videoGenres = videoGenres.split(",");
 
-    if (!!videoGenres) {
-
-        // Parse String
-        videoGenres = videoGenres.split(',');
-
-        if (!isValidGenre(videoGenres)) {
-            throw new ApiError(httpStatus.BAD_REQUEST, "\"[0]\" must be one of [Education, Sports, Movies, Comedy, Lifestyle, All]");
-        }
- 
-        searchQuery = {
-            ...searchQuery, 
-            genre: {
-                $in: videoGenres,
-            },
-        };
+    if (!isValidGenre(videoGenres)) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        '"[0]" must be one of [Education, Sports, Movies, Comedy, Lifestyle, All]'
+      );
     }
 
-    if (!!contentRating) {
+    searchQuery = {
+      ...searchQuery,
+      genre: {
+        $in: videoGenres,
+      },
+    };
+  }
 
-        // Handles Ratings
-        const ratings = getContentRatings(contentRating);
-        if (ratings === null) throw new ApiError(httpStatus.BAD_REQUEST, "\"contentRating\" must be one of [Anyone, 7+, 12+, 16+, 18+, All]");
+  if (!!contentRating) {
+    // Handles Ratings
+    const ratings = getContentRatings(contentRating);
+    if (ratings === null)
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        '"contentRating" must be one of [Anyone, 7+, 12+, 16+, 18+, All]'
+      );
 
-        searchQuery = {
-            ...searchQuery, 
-            contentRating: {
-                $in: ratings,
-            },
-        };
+    searchQuery = {
+      ...searchQuery,
+      contentRating: {
+        $in: ratings,
+      },
+    };
+  }
+
+  if (!!sortBy) {
+    if (!isValidSortOption(sortBy)) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        '"sortBy" must be one of [viewCount, releaseDate]'
+      );
     }
 
-    if (!!sortBy) {
+    if (sortBy === "releaseDate") {
+        const videos = await Video.find(searchQuery);
 
-        if (!isValidSortOption(sortBy)) {
-            throw new ApiError(httpStatus.BAD_REQUEST, "\"sortBy\" must be one of [viewCount, releaseDate]");
-        }
+        videos.sort((a, b) => new Date(a.releaseDate) - new Date(b.releaseDate));
 
-        const sortViewCount = { viewCount: -1 };
-        const sortReleaseDate = { releaseDate: -1 };
-        const sortOption = (sortBy === "releaseDate") ? sortReleaseDate : sortViewCount;
-
-        // searchQuery = {
-        //     ...searchQuery, 
-        //     sort: {
-        //         ...sortOption,
-        //     },
-        // };
-
-        console.log(searchQuery);
-
-        const videos = await Video.find(searchQuery).sort(sortOption);
-
-        return videos;
+      return videos;
     }
 
-    console.log(searchQuery);
-
-    const videos = await Video.find(searchQuery);
+    const videos = await Video.find(searchQuery).sort({ viewCount: -1 });
 
     return videos;
-}
+  }
 
+  //   console.log(searchQuery);
+
+  const videos = await Video.find(searchQuery);
+
+  return videos;
+};
 
 /**
  * Add new Video
@@ -111,39 +112,42 @@ const searchVideos = async (title, videoGenres, contentRating, sortBy) => {
  */
 
 const addNewVideo = async (data) => {
-    let { videoLink, title, genre, contentRating, releaseDate, previewImage } = data;
+  let { videoLink, title, genre, contentRating, releaseDate, previewImage } =
+    data;
 
-    // // Handle Title
-    // if (await Video.isTitleTaken(title)) {
-    //     throw new ApiError(httpStatus.BAD_REQUEST, "Video Title is already taken!");
-    // }
+  // // Handle Title
+  // if (await Video.isTitleTaken(title)) {
+  //     throw new ApiError(httpStatus.BAD_REQUEST, "Video Title is already taken!");
+  // }
 
-    // // Check Video Link
-    // if (await Video.isVideoLinkTaken(videoLink)) {
-    //     throw new ApiError(httpStatus.BAD_REQUEST, "Video Link is already taken!");
-    // }
+  // // Check Video Link
+  // if (await Video.isVideoLinkTaken(videoLink)) {
+  //     throw new ApiError(httpStatus.BAD_REQUEST, "Video Link is already taken!");
+  // }
 
-    // Handle Date
-    releaseDate = new Date(releaseDate).getTime();
+  // Handle Date
+  releaseDate = new Date(releaseDate).getTime();
 
-    // Catch if invalid date passed
-    if (!releaseDate) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "Please pass a valid release Date. i.e. \"28 May 2002\"");
-    }
-    
-    const _doc = new Video({
-        videoLink,
-        title,
-        genre,
-        contentRating,
-        releaseDate,
-        previewImage,
-    });
+  // Catch if invalid date passed
+  if (!releaseDate) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'Please pass a valid release Date. i.e. "28 May 2002"'
+    );
+  }
 
-    const savedDoc = await _doc.save();
-    return savedDoc;
-}
+  const _doc = new Video({
+    videoLink,
+    title,
+    genre,
+    contentRating,
+    releaseDate,
+    previewImage,
+  });
 
+  const savedDoc = await _doc.save();
+  return savedDoc;
+};
 
 /**
  * Patch The vote count
@@ -156,34 +160,30 @@ const addNewVideo = async (data) => {
  */
 
 const patchVoteCount = async (videoId, voteType, changeType) => {
+  const video = await Video.findById(videoId);
 
-    const video = await Video.findById(videoId);
+  if (!video) {
+    throw new ApiError(httpStatus.NOT_FOUND, "No video found with matching id");
+  }
 
-    if (!video) {
-        throw new ApiError(httpStatus.NOT_FOUND, "No video found with matching id");
-    }
+  // If voteType === "upVote" --> upVotes; so its valid key in our document
+  const voteKey = `${voteType}s`;
 
+  let currVotes = video.votes[voteKey];
 
-    // If voteType === "upVote" --> upVotes; so its valid key in our document
-    const voteKey = `${voteType}s`;
+  if (changeType === "increase") {
+    currVotes++;
+  } else {
+    // Prevent value brecome less that Zero
+    currVotes = Math.max(0, currVotes - 1);
+  }
 
-    let currVotes = video.votes[voteKey];
+  video.votes[voteKey] = currVotes;
 
-    if (changeType === "increase") {
-        currVotes++;
-    } else {
-        // Prevent value brecome less that Zero
-        currVotes = Math.max(0, currVotes - 1);
-    }
+  await video.save();
 
-    video.votes[voteKey] = currVotes;
-
-    
-    await video.save();
-    
-    // console.log(video);
-}
-
+  // console.log(video);
+};
 
 /**
  * Patch The vote count
@@ -192,27 +192,25 @@ const patchVoteCount = async (videoId, voteType, changeType) => {
  */
 
 const patchViewCount = async (videoId) => {
+  const video = await Video.findById(videoId);
 
-    const video = await Video.findById(videoId);
+  if (!video) {
+    throw new ApiError(httpStatus.NOT_FOUND, "No video found with matching id");
+  }
 
-    if (!video) {
-        throw new ApiError(httpStatus.NOT_FOUND, "No video found with matching id");
-    }
+  const newViewCount = video.viewCount + 1;
 
-    const newViewCount = video.viewCount + 1;
+  video.viewCount = newViewCount;
 
-    video.viewCount = newViewCount;
-    
-    await video.save();
-    
-    // console.log(video);
-}
+  await video.save();
 
+  // console.log(video);
+};
 
 module.exports = {
-    getVideoById,
-    searchVideos,
-    addNewVideo,
-    patchVoteCount,
-    patchViewCount,
-}
+  getVideoById,
+  searchVideos,
+  addNewVideo,
+  patchVoteCount,
+  patchViewCount,
+};
